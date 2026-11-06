@@ -6,7 +6,7 @@ import Container from '../common/Container';
 import { useLenis } from '../../context/LenisContext';
 
 /**
- * Editorial Footer Component — Phase 2 Implementation
+ * Editorial Footer Component
  * Dynamic copyright year, Lenis smooth scrolling, and social connections.
  * Strictly excludes any private phone numbers.
  */
@@ -131,9 +131,9 @@ export function Footer() {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#737373]">
           <p>© {currentYear} {personalInfo.name}. All rights reserved.</p>
           <p className="flex items-center gap-1.5">
-            <span>Phase 2 Cinematic Experience</span>
+            <span>Engineered with React &amp; Tailwind CSS</span>
             <span>•</span>
-            <span className="text-[#E87524]">Interactive Developer Portfolio</span>
+            <span className="text-[#E87524]">Personal Portfolio</span>
           </p>
         </div>
       </Container>

@@ -29,26 +29,17 @@ export function ResumeSection() {
   const [showSetupModal, setShowSetupModal] = useState(false);
   const modalCloseBtnRef = useRef(null);
 
-  // Dynamic check for PDF presence in public/assets/documents/
+  // Verify PDF presence
   useEffect(() => {
     fetch(resumeData.pdfPath, { method: 'HEAD' })
       .then((res) => {
-        if (res.ok && res.headers.get('content-type')?.includes('pdf')) {
-          setPdfExists(true);
-        } else if (res.ok) {
-          // If status is 200 (some dev servers return index.html for missing files, so check headers or test)
-          // To be safe, test if it's not HTML:
-          const type = res.headers.get('content-type');
-          if (type && !type.includes('html')) {
-            setPdfExists(true);
-          } else {
-            setPdfExists(false);
-          }
-        } else {
+        if (res.status === 404) {
           setPdfExists(false);
+        } else {
+          setPdfExists(true);
         }
       })
-      .catch(() => setPdfExists(false));
+      .catch(() => setPdfExists(true)); // Default to true since asset is bundled in public/
   }, []);
 
   // Handle Escape key to close fullscreen modal

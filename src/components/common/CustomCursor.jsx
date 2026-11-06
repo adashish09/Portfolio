@@ -1,39 +1,36 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 
-const TRAIL_LENGTH = 8;
-
 /**
- * Cinematic Ball Cursor with Particle Trail & Click Interaction
+ * Cinematic Interactive Magnetic Reticle Cursor
  * 
- * Replaces default system pointer on desktop with an organic glowing amber ball.
- * Features a dynamic inertia-based trailing tail, energetic click bounce,
- * expanding click shockwaves, and hover magnetism.
+ * Replaces default system pointer on desktop with an interactive fluid reticle:
+ * - Precision center target dot
+ * - Smooth magnetic outer halo with velocity-driven aerodynamic morphing
+ * - Hover state expansion with dynamic interactive icons (↗ for links, | for text inputs)
+ * - Click contraction and radial shockwave burst
  * 
  * DEVICE SAFETY:
- * Strictly disabled on touch devices and coarse pointers to ensure standard
- * mobile touch gestures are 100% native and unobstructed.
+ * Strictly disabled on touchscreens, tablets, and reduced motion to preserve
+ * 100% native mobile touch gestures and zero obstruction.
  */
 export function CustomCursor() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [visible, setVisible] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
+  const [hoverType, setHoverType] = useState('none'); // 'none' | 'clickable' | 'input'
   const [isClicking, setIsClicking] = useState(false);
   const [isTouch, setIsTouch] = useState(false);
   const [ripples, setRipples] = useState([]);
 
-  const mainBallRef = useRef(null);
-  const trailRefs = useRef([]);
+  const cursorDotRef = useRef(null);
+  const cursorHaloRef = useRef(null);
 
-  // Coordinate references
+  // Position and physics references
   const mousePos = useRef({ x: -200, y: -200 });
-  const trailPositions = useRef(
-    Array.from({ length: TRAIL_LENGTH }, () => ({ x: -200, y: -200 }))
-  );
-
-  // Ball dynamics
-  const ballScale = useRef(1);
-  const ballVelocity = useRef(0);
+  const haloPos = useRef({ x: -200, y: -200 });
+  const haloVel = useRef({ x: 0, y: 0 });
+  const haloScale = useRef(1);
+  const haloBounceVel = useRef(0);
   const animFrameId = useRef(null);
 
   useEffect(() => {
@@ -63,11 +60,8 @@ export function CustomCursor() {
 
       if (!visible) {
         setVisible(true);
-        // Teleport trail points on entry to avoid streaks across screen
-        trailPositions.current.forEach((pt) => {
-          pt.x = e.clientX;
-          pt.y = e.clientY;
-        });
+        haloPos.current.x = e.clientX;
+        haloPos.current.y = e.clientY;
       }
     };
 
@@ -79,43 +73,49 @@ export function CustomCursor() {
       setVisible(true);
     };
 
-    // 3. Click interaction: energetic squash, bounce, and ripple shockwave
+    // 3. Click interaction: snappy contraction and radial shockwave
     const handleMouseDown = (e) => {
       setIsClicking(true);
-      ballScale.current = 0.65; // Squash on press
-      ballVelocity.current = -0.15;
+      haloScale.current = 0.55;
+      haloBounceVel.current = -0.2;
 
-      // Spawn an expanding click ripple shockwave at click coordinates
+      // Spawn click shockwave
       const newRipple = {
         id: Date.now() + Math.random(),
         x: e.clientX,
         y: e.clientY,
       };
 
-      setRipples((prev) => [...prev.slice(-4), newRipple]);
+      setRipples((prev) => [...prev.slice(-3), newRipple]);
 
-      // Auto-cleanup ripple
       setTimeout(() => {
         setRipples((prev) => prev.filter((r) => r.id !== newRipple.id));
-      }, 600);
+      }, 550);
     };
 
     const handleMouseUp = () => {
       setIsClicking(false);
-      ballScale.current = 1.45; // Energetic upward bounce recoil
-      ballVelocity.current = 0.35;
+      haloScale.current = 1.35; // Spring recoil
+      haloBounceVel.current = 0.3;
     };
 
-    // 4. Interactive hover detection
+    // 4. Interactive hover type detection
     const handleMouseOver = (e) => {
       const target = e.target;
       if (!target) return;
 
-      const isInteractive =
+      const isInput =
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA';
+
+      if (isInput) {
+        setHoverType('input');
+        return;
+      }
+
+      const isClickable =
         target.tagName === 'A' ||
         target.tagName === 'BUTTON' ||
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
         target.tagName === 'SELECT' ||
         target.closest('button') ||
         target.closest('a') ||
@@ -123,7 +123,11 @@ export function CustomCursor() {
         target.closest('[role="tab"]') ||
         target.classList?.contains('cursor-pointer');
 
-      setIsHovering(Boolean(isInteractive));
+      if (isClickable) {
+        setHoverType('clickable');
+      } else {
+        setHoverType('none');
+      }
     };
 
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
@@ -134,39 +138,49 @@ export function CustomCursor() {
     document.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('mouseover', handleMouseOver, { passive: true });
 
-    // 5. Physics rendering loop: Primary ball + dynamic trailing tail
+    // 5. High-performance physics rendering loop
     const render = () => {
-      // Smooth spring bounce recovery for main ball
-      const delta = 1 - ballScale.current;
-      ballVelocity.current += delta * 0.28;
-      ballVelocity.current *= 0.65;
-      ballScale.current += ballVelocity.current;
+      // Spring lerp for magnetic follower halo
+      const stiffness = hoverType !== 'none' ? 0.22 : 0.16;
+      const damping = 0.72;
 
-      // Render primary ball directly at mouse position
-      if (mainBallRef.current) {
-        const hoverMultiplier = isHovering ? 1.6 : 1;
-        const currentScale = ballScale.current * hoverMultiplier;
-        mainBallRef.current.style.transform = `translate3d(${mousePos.current.x}px, ${mousePos.current.y}px, 0) scale(${currentScale})`;
+      const dx = mousePos.current.x - haloPos.current.x;
+      const dy = mousePos.current.y - haloPos.current.y;
+
+      haloVel.current.x += dx * stiffness;
+      haloVel.current.y += dy * stiffness;
+
+      haloVel.current.x *= damping;
+      haloVel.current.y *= damping;
+
+      haloPos.current.x += haloVel.current.x;
+      haloPos.current.y += haloVel.current.y;
+
+      // Velocity angle and speed for aerodynamic stretch
+      const speed = Math.sqrt(
+        haloVel.current.x * haloVel.current.x + haloVel.current.y * haloVel.current.y
+      );
+      const angle = Math.atan2(haloVel.current.y, haloVel.current.x) * (180 / Math.PI);
+
+      // Bounce scale spring
+      const bounceDelta = 1 - haloScale.current;
+      haloBounceVel.current += bounceDelta * 0.25;
+      haloBounceVel.current *= 0.65;
+      haloScale.current += haloBounceVel.current;
+
+      const stretch = Math.min(speed * 0.015, 0.35);
+      const scaleX = (1 + stretch) * haloScale.current;
+      const scaleY = (1 - stretch * 0.5) * haloScale.current;
+
+      // Update center target dot
+      if (cursorDotRef.current) {
+        cursorDotRef.current.style.transform = `translate3d(${mousePos.current.x}px, ${mousePos.current.y}px, 0)`;
       }
 
-      // Update trail segments with linear interpolation
-      let prevX = mousePos.current.x;
-      let prevY = mousePos.current.y;
-
-      trailPositions.current.forEach((point, index) => {
-        // Trailing interpolation factor (closer points follow faster)
-        const factor = 0.38 - index * 0.025;
-        point.x += (prevX - point.x) * Math.max(factor, 0.12);
-        point.y += (prevY - point.y) * Math.max(factor, 0.12);
-
-        const el = trailRefs.current[index];
-        if (el) {
-          el.style.transform = `translate3d(${point.x}px, ${point.y}px, 0)`;
-        }
-
-        prevX = point.x;
-        prevY = point.y;
-      });
+      // Update outer magnetic halo
+      if (cursorHaloRef.current) {
+        cursorHaloRef.current.style.transform = `translate3d(${haloPos.current.x}px, ${haloPos.current.y}px, 0) rotate(${angle}deg) scale(${scaleX}, ${scaleY})`;
+      }
 
       animFrameId.current = requestAnimationFrame(render);
     };
@@ -183,7 +197,7 @@ export function CustomCursor() {
       document.removeEventListener('mouseover', handleMouseOver);
       if (animFrameId.current) cancelAnimationFrame(animFrameId.current);
     };
-  }, [prefersReducedMotion, visible, isHovering, isClicking]);
+  }, [prefersReducedMotion, visible, hoverType, isClicking]);
 
   if (prefersReducedMotion || isTouch) return null;
 
@@ -194,59 +208,46 @@ export function CustomCursor() {
         visible ? 'opacity-100' : 'opacity-0'
       }`}
     >
-      {/* Dynamic Trailing Particle Tail */}
-      {Array.from({ length: TRAIL_LENGTH }).map((_, i) => {
-        // Trail size and opacity decay progressively
-        const sizePx = Math.max(16 - i * 1.6, 4);
-        const opacity = Math.max(0.45 - i * 0.05, 0.08);
-
-        return (
-          <div
-            key={i}
-            ref={(el) => (trailRefs.current[i] = el)}
-            className="fixed top-0 left-0 rounded-full pointer-events-none"
-            style={{
-              width: `${sizePx}px`,
-              height: `${sizePx}px`,
-              marginLeft: `-${sizePx / 2}px`,
-              marginTop: `-${sizePx / 2}px`,
-              backgroundColor: '#E87524',
-              opacity: opacity,
-              boxShadow: '0 0 10px rgba(232, 117, 36, 0.5)',
-              willChange: 'transform',
-            }}
-          />
-        );
-      })}
-
-      {/* Primary Glowing Ball Cursor (Replaces the system pointer) */}
+      {/* Precision Center Target Dot (Replaces cursor pointer) */}
       <div
-        ref={mainBallRef}
-        className="fixed top-0 left-0 -ml-3.5 -mt-3.5 w-7 h-7 rounded-full pointer-events-none flex items-center justify-center"
+        ref={cursorDotRef}
+        className="fixed top-0 left-0 w-2 h-2 -ml-1 -mt-1 rounded-full bg-[#F5A14B] pointer-events-none shadow-[0_0_8px_#E87524]"
+      />
+
+      {/* Interactive Magnetic Follower Halo */}
+      <div
+        ref={cursorHaloRef}
+        className={`fixed top-0 left-0 pointer-events-none rounded-full flex items-center justify-center transition-[width,height,margin,border-color,background-color] duration-200 ease-out ${
+          hoverType === 'clickable'
+            ? 'w-12 h-12 -ml-6 -mt-6 border-2 border-[#F5A14B] bg-[#E87524]/15 shadow-[0_0_25px_rgba(232,117,36,0.5)] backdrop-blur-[1px]'
+            : hoverType === 'input'
+            ? 'w-6 h-10 -ml-3 -mt-5 rounded-md border border-[#F5A14B] bg-[#E87524]/10 shadow-[0_0_15px_rgba(232,117,36,0.3)]'
+            : 'w-8 h-8 -ml-4 -mt-4 border border-[#E87524]/50 bg-[#E87524]/5 shadow-[0_0_12px_rgba(232,117,36,0.2)]'
+        }`}
         style={{
           willChange: 'transform',
+          transformOrigin: 'center center',
         }}
       >
-        <div
-          className={`w-full h-full rounded-full transition-[background-color,border-color,box-shadow] duration-200 ${
-            isHovering
-              ? 'bg-[#E87524]/20 border-2 border-[#F5A14B] shadow-[0_0_25px_rgba(232,117,36,0.7)] backdrop-blur-[1px]'
-              : 'bg-gradient-to-br from-[#F5A14B] via-[#E87524] to-[#C25A12] border border-[#F5A14B]/70 shadow-[0_0_16px_rgba(232,117,36,0.8),0_0_30px_rgba(232,117,36,0.35)]'
-          }`}
-        >
-          {/* Specular Light Dot for 3D sphere feel */}
-          <div className="w-1.5 h-1.5 rounded-full bg-white/80 absolute top-1.5 left-1.5 blur-[0.3px]" />
-        </div>
+        {/* Interactive Subtle Reticle Crosshair Marks */}
+        {hoverType === 'clickable' && (
+          <div className="text-[10px] font-mono text-[#F5A14B] font-bold select-none">
+            ↗
+          </div>
+        )}
+        {hoverType === 'input' && (
+          <div className="w-[1.5px] h-4 bg-[#F5A14B] animate-pulse" />
+        )}
       </div>
 
-      {/* Interactive Click Ripple Shockwaves */}
+      {/* Interactive Click Radial Shockwaves */}
       {ripples.map((ripple) => (
         <div
           key={ripple.id}
-          className="fixed top-0 left-0 pointer-events-none -ml-6 -mt-6 w-12 h-12 rounded-full border border-[#F5A14B] animate-ping"
+          className="fixed top-0 left-0 pointer-events-none -ml-7 -mt-7 w-14 h-14 rounded-full border border-[#F5A14B] animate-ping"
           style={{
             transform: `translate3d(${ripple.x}px, ${ripple.y}px, 0)`,
-            boxShadow: '0 0 15px rgba(232, 117, 36, 0.6)',
+            boxShadow: '0 0 20px rgba(232, 117, 36, 0.7)',
           }}
         />
       ))}

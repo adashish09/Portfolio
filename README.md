@@ -1,7 +1,7 @@
 # Cinematic Developer Portfolio — Ashish Kumar
-## Phase 4: Final Design Refinement, EmailJS, Performance & Production Deployment
+## Premium Personal Developer Experience
 
-A premium, cinematic, interactive personal developer portfolio built for **Ashish Kumar** (Software Engineer).
+A cinematic, interactive personal developer portfolio built for **Ashish Kumar** (Software Engineer).
 
 ---
 
@@ -18,73 +18,67 @@ A premium, cinematic, interactive personal developer portfolio built for **Ashis
 
 ---
 
-### Key Phase 4 Architectural Enhancements
+### Key Architectural Highlights
 
-1. **Hero Full-Bleed Atmospheric Redesign:**
+1. **Hero Full-Bleed Atmospheric Experience:**
    - Full-bleed ambient smoke video layer (`hero-atmosphere.mp4`, `object-fit: cover`) covering the full viewport with seamless dark edge gradients.
    - Transparent portrait cutout with feathered cosine alpha curve on the bottom edge and soft warm rim lighting, eliminating harsh rectangular cuts.
    - Large display typography scale, balanced vertical line breaks, and clear CTAs ("Explore My Work", "Download Resume", "Contact Me").
 
 2. **About Section Full-Width Cinematic Video:**
    - Architectural corridor video (`about-transition.mp4`) spans as an expansive full-width ambient layer.
-   - Replaced boxed media capsule with clean magazine-style typography, editorial pull-quotes, and high-contrast educational credentials.
+   - Editorial pull-quotes, biography narrative, and high-contrast academic qualifications.
 
-3. **Interactive Technical Capabilities Ecosystem:**
-   - Dynamic domain grouping: *All, Programming Languages, Frontend & Mobile, Backend & Databases, AI & Machine Learning, Tools & Deployment, Core CS*.
-   - Live capability search bar with real-time filtering and clear action.
-   - **Technology-to-Project Relationship Matrix:** Clicking any technology (e.g. *Python, React, Flask, TiDB, Ollama, Flutter*) opens an interactive relationship tray revealing verified production projects and internships where that technology was applied.
+3. **Uniform Technical Capabilities Ecosystem:**
+   - All 38 technical competencies presented in a clean, equal-sized uniform card grid (`h-32`).
+   - Every card displays the authentic SVG brand icon alongside the technology name.
+   - Domain filter pills (`All`, `Languages`, `Frontend & Mobile`, `Backend & Databases`, `AI & Machine Learning`, `Tools & Deployment`, `Core CS`) and instant live search.
 
-4. **Professional Career Timeline:**
-   - Redesigned as a compact, scannable career timeline with vertical rail and glowing marker node.
-   - Explicit classification of the TAP Academy structured internship program, concise production responsibilities, and applied technologies without oversized containers.
+4. **Interactive Magnetic Reticle Cursor:**
+   - System pointer replaced on desktop with a glowing precision dot and dynamic magnetic follower halo.
+   - Velocity-driven aerodynamic stretching and interactive morphing (e.g. `↗` for links, focus indicator for text inputs).
+   - Click interaction with snappy contraction and radial shockwave bursts.
+   - Full touch safety: Automatically bypassed on touchscreens and mobile devices.
 
-5. **EmailJS Browser SDK Integration:**
-   - In-browser form dispatch using `@emailjs/browser` with honeypot spam protection.
-   - Strict client-side validation, accessible live announcements (`aria-live="polite"`), and direct `mailto:` fallback when credentials are unconfigured.
-
----
-
-### EmailJS Configuration Contract
-
-To enable in-browser message delivery through EmailJS:
-
-1. Create a free account on [EmailJS](https://www.emailjs.com/).
-2. Create an **Email Service** (e.g., Gmail or Outlook service).
-3. Create an **Email Template** with the exact parameter names below:
-   - `{{from_name}}` — Sender's full name
-   - `{{from_email}}` — Sender's email address
-   - `{{subject}}` — Message subject
-   - `{{message}}` — Message body
-4. Copy `.env.example` to `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-5. Populate your keys in `.env`:
-   ```env
-   VITE_EMAILJS_SERVICE_ID=your_service_id
-   VITE_EMAILJS_TEMPLATE_ID=your_template_id
-   VITE_EMAILJS_PUBLIC_KEY=your_public_key
-   ```
-*If credentials are not set, the form gracefully offers a direct 1-click mailto fallback prefilled with the sender's input without claiming fake success.*
+5. **Contact Form with 1-Click Default Message Templates:**
+   - Preset message templates on top of the form for instant pre-fill:
+     - 💼 Software Engineering Role
+     - 🚀 Project Collaboration
+     - 🤝 System Design Discussion
+     - ⚡ Quick Introduction
+   - Live character counter (`X / 1500 chars`), honeypot spam protection, accessible status feedback, and graceful `mailto:` fallback.
 
 ---
 
-### Netlify Deployment Instructions
+### Vercel Deployment via GitHub (Recommended)
 
-This repository is pre-configured for automated Netlify deployment:
+This repository is pre-configured for automated 1-click Vercel deployment with `vercel.json`:
 
-1. **Build Settings:**
+#### Step 1: Push Code to your GitHub
+```bash
+# 1. Add your GitHub remote repository
+git remote add origin https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME.git
+
+# 2. Push the main branch
+git push -u origin main
+```
+
+#### Step 2: Import into Vercel
+1. Log in to [Vercel](https://vercel.com/) with your GitHub account.
+2. Click **"Add New..."** ➔ **"Project"**.
+3. Import your GitHub portfolio repository.
+4. Vercel will automatically detect the settings from `vercel.json`:
+   - **Framework Preset:** Vite
    - **Build Command:** `npm run build`
-   - **Publish Directory:** `dist`
-2. **SPA Routing:**
-   - A `_redirects` file is pre-configured in `public/_redirects` to route all paths to `/index.html 200`.
-3. **HTTP Security Headers & Cache:**
-   - Pre-configured in `netlify.toml` with `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and 1-year immutable caching for static assets.
-4. **Environment Variables on Netlify:**
-   - In Netlify Dashboard under **Site configuration ➔ Environment variables**, add:
-     - `VITE_EMAILJS_SERVICE_ID`
-     - `VITE_EMAILJS_TEMPLATE_ID`
-     - `VITE_EMAILJS_PUBLIC_KEY`
+   - **Output Directory:** `dist`
+
+#### Step 3: Add Environment Variables (Optional for EmailJS)
+In the Vercel project setup (or later under **Settings ➔ Environment Variables**), add:
+- `VITE_EMAILJS_SERVICE_ID`
+- `VITE_EMAILJS_TEMPLATE_ID`
+- `VITE_EMAILJS_PUBLIC_KEY`
+
+5. Click **"Deploy"**. Your cinematic portfolio will be live in seconds with automatic HTTPS and global edge caching!
 
 ---
 

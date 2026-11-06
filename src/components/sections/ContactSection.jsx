@@ -15,8 +15,8 @@ import {
   User,
   FileText,
   MessageSquare,
-  ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  RotateCcw
 } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 import { personalInfo } from '../../data/portfolioData';
@@ -26,17 +26,43 @@ import Button from '../common/Button';
 import { Github, Linkedin } from '../common/Icons';
 import AtmosphericGlow from '../common/AtmosphericGlow';
 
-const QUICK_SUBJECTS = [
-  { label: '💼 Engineering Opportunity', value: 'Software Engineering Opportunity' },
-  { label: '🚀 Full-Stack / AI Project', value: 'Project Collaboration: Full-Stack / AI' },
-  { label: '🤝 Technical Discussion', value: 'Technical Architecture & Collaboration' },
-  { label: '⚡ General Inquiry', value: 'Portfolio Inquiry for Ashish Kumar' },
+const DEFAULT_MESSAGE_OPTIONS = [
+  {
+    id: 'hiring',
+    icon: '💼',
+    title: 'Software Engineering Role',
+    badge: 'Recruiter / Hiring',
+    subject: 'Software Engineering Opportunity - Full-Time',
+    message: `Hi Ashish,\n\nI reviewed your portfolio and engineering background in full-stack architectures and AI systems. We have an open Software Engineering role on our team that aligns well with your capabilities. I would love to connect and discuss the position with you.`
+  },
+  {
+    id: 'collaboration',
+    icon: '🚀',
+    title: 'Project Collaboration',
+    badge: 'Technical Build',
+    subject: 'Project Collaboration & Technical Partnership',
+    message: `Hi Ashish,\n\nI am currently architecting a project and would love to collaborate with you, particularly given your hands-on experience across React, Python, and scalable backend services. Let's schedule time to discuss technical scope and milestones.`
+  },
+  {
+    id: 'tech_chat',
+    icon: '🤝',
+    title: 'System Design Discussion',
+    badge: 'Architecture',
+    subject: 'Technical Architecture & System Design Discussion',
+    message: `Hi Ashish,\n\nI was impressed by your work on NetSentinel (packet inspection) and AI Resume Interviewer (RAG pipeline). I'd love to connect for a technical conversation on system design, distributed data, and LLM orchestration.`
+  },
+  {
+    id: 'intro',
+    icon: '⚡',
+    title: 'Quick Introduction',
+    badge: 'Networking',
+    subject: 'Connecting with Ashish Kumar',
+    message: `Hello Ashish,\n\nI came across your cinematic developer portfolio and wanted to reach out, say hello, and connect. Keep up the impressive work, and looking forward to staying in touch!`
+  }
 ];
 
 /**
- * Cinematic Contact Section — Optimized UI & UX with EmailJS
- * Features quick-subject chips, live character counter, instant validation,
- * 1-click clipboard copy, mailto fallback, and live availability badge.
+ * Cinematic Contact Section — Optimized UI & UX with EmailJS & 1-Click Message Templates
  * Strictly excludes any phone number.
  */
 export function ContactSection() {
@@ -52,7 +78,7 @@ export function ContactSection() {
   const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error' | 'unconfigured'
   const [errorMessage, setErrorMessage] = useState('');
   const [copied, setCopied] = useState(false);
-  const [selectedSubjectChip, setSelectedSubjectChip] = useState('');
+  const [selectedTemplateId, setSelectedTemplateId] = useState(null);
 
   // EmailJS Environment Variables
   const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
@@ -103,12 +129,28 @@ export function ContactSection() {
     }
   };
 
-  const handleQuickSubject = (chip) => {
-    setSelectedSubjectChip(chip.label);
-    setFormData((prev) => ({ ...prev, subject: chip.value }));
-    if (errors.subject) {
-      setErrors((prev) => ({ ...prev, subject: '' }));
-    }
+  const handleSelectDefaultTemplate = (opt) => {
+    setSelectedTemplateId(opt.id);
+    setFormData((prev) => ({
+      ...prev,
+      subject: opt.subject,
+      message: opt.message,
+    }));
+
+    setErrors((prev) => ({
+      ...prev,
+      subject: '',
+      message: '',
+    }));
+  };
+
+  const handleClearTemplate = () => {
+    setSelectedTemplateId(null);
+    setFormData((prev) => ({
+      ...prev,
+      subject: '',
+      message: '',
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -170,7 +212,7 @@ export function ContactSection() {
   const handleResetForm = () => {
     setStatus('idle');
     setFormData({ name: '', email: '', subject: '', message: '', _honeypot: '' });
-    setSelectedSubjectChip('');
+    setSelectedTemplateId(null);
     setErrors({});
   };
 
@@ -325,7 +367,7 @@ export function ContactSection() {
             </div>
           </div>
 
-          {/* Right Column: Verified EmailJS Form */}
+          {/* Right Column: Contact Form with Default Options on Top */}
           <div className="lg:col-span-7">
             <div className="p-6 sm:p-8 rounded-2xl bg-[#111111] border border-white/10 shadow-2xl relative">
               
@@ -335,7 +377,7 @@ export function ContactSection() {
                   <span className="w-2 h-2 rounded-full bg-[#E87524]" />
                 </h3>
                 <p className="text-xs text-[#A1A1A1] mt-1">
-                  Transmissions are delivered directly to Ashish&rsquo;s inbox via EmailJS.
+                  Deliver your message directly to Ashish&rsquo;s inbox via EmailJS.
                 </p>
               </div>
 
@@ -404,7 +446,7 @@ export function ContactSection() {
                       <div>
                         <p className="font-semibold text-[#F5F5F5]">Ready for Production Delivery</p>
                         <p className="text-xs text-[#A1A1A1] mt-1 leading-relaxed">
-                          To enable instant in-browser EmailJS dispatch, add your <code className="text-[#F5A14B]">VITE_EMAILJS_SERVICE_ID</code>, <code className="text-[#F5A14B]">VITE_EMAILJS_TEMPLATE_ID</code>, and <code className="text-[#F5A14B]">VITE_EMAILJS_PUBLIC_KEY</code> to your environment.
+                          To enable instant in-browser EmailJS dispatch, add your <code className="text-[#F5A14B]">VITE_EMAILJS_SERVICE_ID</code>, <code className="text-[#F5A14B]">VITE_EMAILJS_TEMPLATE_ID</code>, and <code className="text-[#F5A14B]">VITE_EMAILJS_PUBLIC_KEY</code> to your environment or Vercel dashboard.
                         </p>
                       </div>
                     </div>
@@ -422,7 +464,7 @@ export function ContactSection() {
                       <button
                         type="button"
                         onClick={() => setStatus('idle')}
-                        className="px-3 py-1.5 text-xs font-mono text-[#A1A1A1] hover:text-white"
+                        className="px-3 py-1.5 text-xs font-mono text-[#A1A1A1] hover:text-white cursor-pointer"
                       >
                         Edit fields
                       </button>
@@ -431,209 +473,251 @@ export function ContactSection() {
                 )}
               </div>
 
-              {/* The Form */}
+              {/* The Form with Default Options on Top */}
               {status !== 'success' && (
-                <form onSubmit={handleSubmit} noValidate className="space-y-4">
-                  {/* Invisible Honeypot Spam Guard */}
-                  <input
-                    type="text"
-                    name="_honeypot"
-                    value={formData._honeypot}
-                    onChange={handleChange}
-                    className="hidden"
-                    tabIndex={-1}
-                    autoComplete="off"
-                    aria-hidden="true"
-                  />
-
-                  {/* Name field */}
-                  <div>
-                    <label htmlFor="from_name" className="block text-xs font-mono text-[#A1A1A1] mb-1.5">
-                      Your Name <span className="text-[#E87524]">*</span>
-                    </label>
-                    <div className="relative">
-                      <User className="w-4 h-4 text-[#737373] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        id="from_name"
-                        name="name"
-                        type="text"
-                        autoComplete="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        aria-required="true"
-                        aria-invalid={!!errors.name}
-                        aria-describedby={errors.name ? 'name-error' : undefined}
-                        disabled={status === 'submitting'}
-                        placeholder="e.g. Sarah Connor"
-                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#161616] border text-sm text-[#F5F5F5] placeholder-[#737373] transition-colors focus:outline-none ${
-                          errors.name
-                            ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
-                            : 'border-white/10 focus:border-[#E87524] focus:ring-2 focus:ring-[#E87524]/20'
-                        }`}
-                      />
+                <div className="space-y-6">
+                  
+                  {/* ========================================================
+                      DEFAULT MESSAGE OPTIONS (ON TOP OF THE FORM)
+                      ======================================================== */}
+                  <div className="p-4 rounded-xl bg-[#161616] border border-white/10 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono uppercase tracking-wider text-[#E87524] font-semibold flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Quick-Fill Message Options
+                      </span>
+                      {selectedTemplateId && (
+                        <button
+                          type="button"
+                          onClick={handleClearTemplate}
+                          className="text-[11px] font-mono text-[#737373] hover:text-[#E87524] flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          <span>Reset</span>
+                        </button>
+                      )}
                     </div>
-                    {errors.name && (
-                      <p id="name-error" className="text-xs text-red-400 mt-1 font-mono">
-                        {errors.name}
-                      </p>
-                    )}
-                  </div>
+                    
+                    <p className="text-xs text-[#A1A1A1] leading-relaxed">
+                      Select a conversation topic to automatically populate the subject and message body:
+                    </p>
 
-                  {/* Email field */}
-                  <div>
-                    <label htmlFor="from_email" className="block text-xs font-mono text-[#A1A1A1] mb-1.5">
-                      Email Address <span className="text-[#E87524]">*</span>
-                    </label>
-                    <div className="relative">
-                      <Mail className="w-4 h-4 text-[#737373] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        id="from_email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        aria-required="true"
-                        aria-invalid={!!errors.email}
-                        aria-describedby={errors.email ? 'email-error' : undefined}
-                        disabled={status === 'submitting'}
-                        placeholder="e.g. sarah@techcorp.com"
-                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#161616] border text-sm text-[#F5F5F5] placeholder-[#737373] transition-colors focus:outline-none ${
-                          errors.email
-                            ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
-                            : 'border-white/10 focus:border-[#E87524] focus:ring-2 focus:ring-[#E87524]/20'
-                        }`}
-                      />
-                    </div>
-                    {errors.email && (
-                      <p id="email-error" className="text-xs text-red-400 mt-1 font-mono">
-                        {errors.email}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Quick Subject Chips */}
-                  <div>
-                    <label className="block text-xs font-mono text-[#A1A1A1] mb-2">
-                      Topic Shortcut <span className="text-[#737373]">(Optional)</span>
-                    </label>
-                    <div className="flex flex-wrap gap-1.5 mb-2.5">
-                      {QUICK_SUBJECTS.map((chip) => {
-                        const isChipActive = selectedSubjectChip === chip.label || formData.subject === chip.value;
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {DEFAULT_MESSAGE_OPTIONS.map((opt) => {
+                        const isSelected = selectedTemplateId === opt.id;
                         return (
                           <button
-                            key={chip.label}
+                            key={opt.id}
                             type="button"
-                            onClick={() => handleQuickSubject(chip)}
-                            className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all cursor-pointer ${
-                              isChipActive
-                                ? 'bg-[#E87524] text-black font-semibold shadow-[0_0_10px_rgba(232,117,36,0.3)]'
-                                : 'bg-[#181818] text-[#A1A1A1] hover:text-white border border-white/5 hover:border-white/20'
+                            onClick={() => handleSelectDefaultTemplate(opt)}
+                            className={`p-3 rounded-xl text-left transition-all cursor-pointer border text-xs flex flex-col justify-between ${
+                              isSelected
+                                ? 'bg-[#E87524]/20 border-[#E87524] shadow-[0_0_15px_rgba(232,117,36,0.3)] ring-1 ring-[#E87524]'
+                                : 'bg-[#121212] border-white/5 hover:border-white/20 hover:bg-[#1a1a1a]'
                             }`}
                           >
-                            {chip.label}
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-display font-bold text-[#F5F5F5] flex items-center gap-1.5">
+                                <span>{opt.icon}</span>
+                                <span>{opt.title}</span>
+                              </span>
+                              <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded ${
+                                isSelected ? 'bg-[#E87524] text-black font-semibold' : 'bg-white/5 text-[#737373]'
+                              }`}>
+                                {opt.badge}
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-mono text-[#737373] line-clamp-1">
+                              {opt.subject}
+                            </span>
                           </button>
                         );
                       })}
                     </div>
-
-                    {/* Subject input */}
-                    <div className="relative">
-                      <FileText className="w-4 h-4 text-[#737373] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        id="subject"
-                        name="subject"
-                        type="text"
-                        value={formData.subject}
-                        onChange={handleChange}
-                        aria-required="true"
-                        aria-invalid={!!errors.subject}
-                        aria-describedby={errors.subject ? 'subject-error' : undefined}
-                        disabled={status === 'submitting'}
-                        placeholder="Subject line or role designation..."
-                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#161616] border text-sm text-[#F5F5F5] placeholder-[#737373] transition-colors focus:outline-none ${
-                          errors.subject
-                            ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
-                            : 'border-white/10 focus:border-[#E87524] focus:ring-2 focus:ring-[#E87524]/20'
-                        }`}
-                      />
-                    </div>
-                    {errors.subject && (
-                      <p id="subject-error" className="text-xs text-red-400 mt-1 font-mono">
-                        {errors.subject}
-                      </p>
-                    )}
                   </div>
 
-                  {/* Message field */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label htmlFor="message" className="text-xs font-mono text-[#A1A1A1]">
-                        Message Details <span className="text-[#E87524]">*</span>
+                  {/* Form Fields */}
+                  <form onSubmit={handleSubmit} noValidate className="space-y-4">
+                    {/* Invisible Honeypot Spam Guard */}
+                    <input
+                      type="text"
+                      name="_honeypot"
+                      value={formData._honeypot}
+                      onChange={handleChange}
+                      className="hidden"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      aria-hidden="true"
+                    />
+
+                    {/* Name field */}
+                    <div>
+                      <label htmlFor="from_name" className="block text-xs font-mono text-[#A1A1A1] mb-1.5">
+                        Your Name <span className="text-[#E87524]">*</span>
                       </label>
-                      <span className={`text-[10px] font-mono ${
-                        formData.message.length >= 10 ? 'text-emerald-400' : 'text-[#737373]'
-                      }`}>
-                        {formData.message.length} / 1500 chars {formData.message.length >= 10 && '✓'}
-                      </span>
-                    </div>
-
-                    <div className="relative">
-                      <textarea
-                        id="message"
-                        name="message"
-                        rows={5}
-                        maxLength={1500}
-                        value={formData.message}
-                        onChange={handleChange}
-                        aria-required="true"
-                        aria-invalid={!!errors.message}
-                        aria-describedby={errors.message ? 'message-error' : undefined}
-                        disabled={status === 'submitting'}
-                        placeholder="Share details regarding your team, technology stack, project scope, or scheduling..."
-                        className={`w-full px-4 py-3 rounded-xl bg-[#161616] border text-sm text-[#F5F5F5] placeholder-[#737373] transition-colors focus:outline-none resize-none ${
-                          errors.message
-                            ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
-                            : 'border-white/10 focus:border-[#E87524] focus:ring-2 focus:ring-[#E87524]/20'
-                        }`}
-                      />
-                    </div>
-                    {errors.message && (
-                      <p id="message-error" className="text-xs text-red-400 mt-1 font-mono">
-                        {errors.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Submission CTA Button */}
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      disabled={status === 'submitting'}
-                      className={`w-full py-3.5 px-6 rounded-xl font-display font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
-                        status === 'submitting'
-                          ? 'bg-[#1e1e1e] text-[#737373] cursor-not-allowed border border-white/5'
-                          : 'bg-[#E87524] hover:bg-[#F5A14B] text-black shadow-[0_0_25px_rgba(232,117,36,0.35)] hover:shadow-[0_0_35px_rgba(232,117,36,0.5)] active:scale-[0.99]'
-                      }`}
-                    >
-                      {status === 'submitting' ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin text-[#F5A14B]" />
-                          <span>Routing via EmailJS...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-4 h-4" />
-                          <span>Dispatch Transmission</span>
-                        </>
+                      <div className="relative">
+                        <User className="w-4 h-4 text-[#737373] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          id="from_name"
+                          name="name"
+                          type="text"
+                          autoComplete="name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          aria-required="true"
+                          aria-invalid={!!errors.name}
+                          aria-describedby={errors.name ? 'name-error' : undefined}
+                          disabled={status === 'submitting'}
+                          placeholder="e.g. Sarah Connor"
+                          className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#161616] border text-sm text-[#F5F5F5] placeholder-[#737373] transition-colors focus:outline-none ${
+                            errors.name
+                              ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                              : 'border-white/10 focus:border-[#E87524] focus:ring-2 focus:ring-[#E87524]/20'
+                          }`}
+                        />
+                      </div>
+                      {errors.name && (
+                        <p id="name-error" className="text-xs text-red-400 mt-1 font-mono">
+                          {errors.name}
+                        </p>
                       )}
-                    </button>
-                    
-                    <p className="text-[11px] font-mono text-center text-[#737373] mt-3">
-                      End-to-end encrypted dispatch · Delivered straight to Ashish Kumar
-                    </p>
-                  </div>
-                </form>
+                    </div>
+
+                    {/* Email field */}
+                    <div>
+                      <label htmlFor="from_email" className="block text-xs font-mono text-[#A1A1A1] mb-1.5">
+                        Email Address <span className="text-[#E87524]">*</span>
+                      </label>
+                      <div className="relative">
+                        <Mail className="w-4 h-4 text-[#737373] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          id="from_email"
+                          name="email"
+                          type="email"
+                          autoComplete="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          aria-required="true"
+                          aria-invalid={!!errors.email}
+                          aria-describedby={errors.email ? 'email-error' : undefined}
+                          disabled={status === 'submitting'}
+                          placeholder="e.g. sarah@techcorp.com"
+                          className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#161616] border text-sm text-[#F5F5F5] placeholder-[#737373] transition-colors focus:outline-none ${
+                            errors.email
+                              ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                              : 'border-white/10 focus:border-[#E87524] focus:ring-2 focus:ring-[#E87524]/20'
+                          }`}
+                        />
+                      </div>
+                      {errors.email && (
+                        <p id="email-error" className="text-xs text-red-400 mt-1 font-mono">
+                          {errors.email}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Subject field */}
+                    <div>
+                      <label htmlFor="subject" className="block text-xs font-mono text-[#A1A1A1] mb-1.5">
+                        Subject Line <span className="text-[#E87524]">*</span>
+                      </label>
+                      <div className="relative">
+                        <FileText className="w-4 h-4 text-[#737373] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          id="subject"
+                          name="subject"
+                          type="text"
+                          value={formData.subject}
+                          onChange={handleChange}
+                          aria-required="true"
+                          aria-invalid={!!errors.subject}
+                          aria-describedby={errors.subject ? 'subject-error' : undefined}
+                          disabled={status === 'submitting'}
+                          placeholder="Subject line or designated opportunity..."
+                          className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#161616] border text-sm text-[#F5F5F5] placeholder-[#737373] transition-colors focus:outline-none ${
+                            errors.subject
+                              ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                              : 'border-white/10 focus:border-[#E87524] focus:ring-2 focus:ring-[#E87524]/20'
+                          }`}
+                        />
+                      </div>
+                      {errors.subject && (
+                        <p id="subject-error" className="text-xs text-red-400 mt-1 font-mono">
+                          {errors.subject}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Message Details */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label htmlFor="message" className="text-xs font-mono text-[#A1A1A1]">
+                          Message Details <span className="text-[#E87524]">*</span>
+                        </label>
+                        <span className={`text-[10px] font-mono ${
+                          formData.message.length >= 10 ? 'text-emerald-400' : 'text-[#737373]'
+                        }`}>
+                          {formData.message.length} / 1500 chars {formData.message.length >= 10 && '✓'}
+                        </span>
+                      </div>
+
+                      <div className="relative">
+                        <textarea
+                          id="message"
+                          name="message"
+                          rows={6}
+                          maxLength={1500}
+                          value={formData.message}
+                          onChange={handleChange}
+                          aria-required="true"
+                          aria-invalid={!!errors.message}
+                          aria-describedby={errors.message ? 'message-error' : undefined}
+                          disabled={status === 'submitting'}
+                          placeholder="Share details regarding your opportunity, engineering challenge, team scope, or collaboration..."
+                          className={`w-full px-4 py-3 rounded-xl bg-[#161616] border text-sm text-[#F5F5F5] placeholder-[#737373] transition-colors focus:outline-none resize-none leading-relaxed ${
+                            errors.message
+                              ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                              : 'border-white/10 focus:border-[#E87524] focus:ring-2 focus:ring-[#E87524]/20'
+                          }`}
+                        />
+                      </div>
+                      {errors.message && (
+                        <p id="message-error" className="text-xs text-red-400 mt-1 font-mono">
+                          {errors.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Submission CTA */}
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={status === 'submitting'}
+                        className={`w-full py-3.5 px-6 rounded-xl font-display font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+                          status === 'submitting'
+                            ? 'bg-[#1e1e1e] text-[#737373] cursor-not-allowed border border-white/5'
+                            : 'bg-[#E87524] hover:bg-[#F5A14B] text-black shadow-[0_0_25px_rgba(232,117,36,0.35)] hover:shadow-[0_0_35px_rgba(232,117,36,0.5)] active:scale-[0.99]'
+                        }`}
+                      >
+                        {status === 'submitting' ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-[#F5A14B]" />
+                            <span>Routing via EmailJS...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4" />
+                            <span>Dispatch Transmission</span>
+                          </>
+                        )}
+                      </button>
+                      
+                      <p className="text-[11px] font-mono text-center text-[#737373] mt-3">
+                        End-to-end encrypted dispatch · Delivered straight to Ashish Kumar
+                      </p>
+                    </div>
+                  </form>
+                </div>
               )}
             </div>
           </div>
