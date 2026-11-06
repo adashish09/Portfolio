@@ -176,9 +176,9 @@ export function ContactSection() {
     setErrorMessage('');
 
     const templateParams = {
-      from_name: formData.name.trim(),
-      from_email: formData.email.trim(),
-      subject: formData.subject.trim(),
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      title: formData.subject.trim(),
       message: formData.message.trim(),
     };
 
@@ -552,13 +552,13 @@ export function ContactSection() {
 
                     {/* Name field */}
                     <div>
-                      <label htmlFor="from_name" className="block text-xs font-mono text-[#A1A1A1] mb-1.5">
+                      <label htmlFor="name" className="block text-xs font-mono text-[#A1A1A1] mb-1.5">
                         Your Name <span className="text-[#E87524]">*</span>
                       </label>
                       <div className="relative">
                         <User className="w-4 h-4 text-[#737373] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                         <input
-                          id="from_name"
+                          id="name"
                           name="name"
                           type="text"
                           autoComplete="name"
@@ -585,13 +585,13 @@ export function ContactSection() {
 
                     {/* Email field */}
                     <div>
-                      <label htmlFor="from_email" className="block text-xs font-mono text-[#A1A1A1] mb-1.5">
+                      <label htmlFor="email" className="block text-xs font-mono text-[#A1A1A1] mb-1.5">
                         Email Address <span className="text-[#E87524]">*</span>
                       </label>
                       <div className="relative">
                         <Mail className="w-4 h-4 text-[#737373] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                         <input
-                          id="from_email"
+                          id="email"
                           name="email"
                           type="email"
                           autoComplete="email"
@@ -618,14 +618,14 @@ export function ContactSection() {
 
                     {/* Subject field */}
                     <div>
-                      <label htmlFor="subject" className="block text-xs font-mono text-[#A1A1A1] mb-1.5">
+                      <label htmlFor="title" className="block text-xs font-mono text-[#A1A1A1] mb-1.5">
                         Subject Line <span className="text-[#E87524]">*</span>
                       </label>
                       <div className="relative">
                         <FileText className="w-4 h-4 text-[#737373] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                         <input
-                          id="subject"
-                          name="subject"
+                          id="title"
+                          name="title"
                           type="text"
                           value={formData.subject}
                           onChange={handleChange}
