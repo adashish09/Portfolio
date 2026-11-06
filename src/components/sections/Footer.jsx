@@ -115,7 +115,7 @@ export function Footer() {
 
         </div>
 
-        {/* Bottom Legal / Phase 2 Notice */}
+        {/* Bottom Legal & Colophon */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#737373]">
           <p>© {currentYear} {personalInfo.name}. All rights reserved.</p>
           <p className="flex items-center gap-1.5">

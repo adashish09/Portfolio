@@ -45,7 +45,7 @@ export function MobileMenu({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 md:hidden bg-[#080808]/95 backdrop-blur-2xl flex flex-col"
+          className="fixed inset-0 z-50 xl:hidden bg-[#080808]/95 backdrop-blur-2xl flex flex-col"
         >
           {/* Header with Close Button */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
