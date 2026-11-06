@@ -218,9 +218,13 @@ export function ProjectsSection() {
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {['Python', 'Flask', 'MySQL (TiDB)', 'JWT Authentication', 'React.js', 'Vercel', 'Render'].map((t) => (
-                        <Badge key={t} variant="default" size="sm">
-                          {t}
-                        </Badge>
+                        <span
+                          key={t}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#181818] border border-white/5 text-xs font-mono text-[#D4D4D4] hover:border-[#E87524]/40 hover:text-white transition-all"
+                        >
+                          <TechIcon name={t} className="w-3.5 h-3.5 shrink-0" />
+                          <span>{t}</span>
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -370,10 +374,14 @@ export function ProjectsSection() {
                       Integrated Tech Stack
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {['React.js', 'Node.js', 'Express.js', 'Python', 'MongoDB', 'Ollama (Llama 3.1 8B)', 'RAG', 'Vector Search'].map((t) => (
-                        <Badge key={t} variant="default" size="sm">
-                          {t}
-                        </Badge>
+                      {['React.js', 'Node.js', 'Express.js', 'Python', 'MongoDB', 'Ollama', 'RAG', 'Vector Search'].map((t) => (
+                        <span
+                          key={t}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#181818] border border-white/5 text-xs font-mono text-[#D4D4D4] hover:border-[#E87524]/40 hover:text-white transition-all"
+                        >
+                          <TechIcon name={t} className="w-3.5 h-3.5 shrink-0" />
+                          <span>{t}</span>
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -483,9 +491,13 @@ export function ProjectsSection() {
 
                   <div className="mt-5 flex flex-wrap gap-1.5">
                     {['Python', 'React.js', 'Linux', 'Packet Capture', 'Anomaly Detection'].map((t) => (
-                      <Badge key={t} variant="default" size="xs">
-                        {t}
-                      </Badge>
+                      <span
+                        key={t}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#181818] border border-white/5 text-xs font-mono text-[#D4D4D4] hover:border-[#E87524]/40 hover:text-white transition-all"
+                      >
+                        <TechIcon name={t} className="w-3.5 h-3.5 shrink-0" />
+                        <span>{t}</span>
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -542,10 +554,14 @@ export function ProjectsSection() {
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-1.5">
-                    {['Flutter', 'Dart', 'Firebase Auth', 'Cloud Firestore', 'Offline-First Sync'].map((t) => (
-                      <Badge key={t} variant="default" size="xs">
-                        {t}
-                      </Badge>
+                    {['Flutter', 'Dart', 'Firebase', 'Cloud Firestore', 'Offline-First Sync'].map((t) => (
+                      <span
+                        key={t}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#181818] border border-white/5 text-xs font-mono text-[#D4D4D4] hover:border-[#E87524]/40 hover:text-white transition-all"
+                      >
+                        <TechIcon name={t} className="w-3.5 h-3.5 shrink-0" />
+                        <span>{t}</span>
+                      </span>
                     ))}
                   </div>
                 </div>

@@ -7,6 +7,7 @@ import Container from '../common/Container';
 import SectionHeader from '../common/SectionHeader';
 import Badge from '../common/Badge';
 import AtmosphericGlow from '../common/AtmosphericGlow';
+import { TechIcon } from '../common/TechIcons';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -125,9 +126,13 @@ export function ExperienceSection() {
                   <div className="mt-6 pt-5 border-t border-white/5 flex flex-wrap items-center gap-2">
                     <span className="text-xs font-mono text-[#737373] mr-1">Stack:</span>
                     {exp.technologies.map((tech) => (
-                      <Badge key={tech} variant="default" size="xs">
-                        {tech}
-                      </Badge>
+                      <span
+                        key={tech}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#181818] border border-white/5 text-xs font-mono text-[#D4D4D4] hover:border-[#E87524]/40 hover:text-white transition-all"
+                      >
+                        <TechIcon name={tech} className="w-3.5 h-3.5 shrink-0" />
+                        <span>{tech}</span>
+                      </span>
                     ))}
                   </div>
 

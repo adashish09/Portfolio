@@ -111,18 +111,6 @@ export function Footer() {
                 </a>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={scrollToTop}
-              className="inline-flex items-center gap-2 text-xs font-mono text-[#A1A1A1] hover:text-[#F5F5F5] transition-colors w-fit group focus:outline-none focus:ring-1 focus:ring-[#E87524] rounded p-1"
-              aria-label="Back to top"
-            >
-              <span>Back to Top</span>
-              <span className="p-1 rounded bg-[#171717] border border-white/10 group-hover:border-[#E87524]/40 transition-colors">
-                <ArrowUp className="w-3 h-3 text-[#E87524]" />
-              </span>
-            </button>
           </div>
 
         </div>
