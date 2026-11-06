@@ -24,6 +24,7 @@ import Badge from '../common/Badge';
 import Button from '../common/Button';
 import { Github } from '../common/Icons';
 import AtmosphericGlow from '../common/AtmosphericGlow';
+import { TechIcon } from '../common/TechIcons';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 
 gsap.registerPlugin(ScrollTrigger);

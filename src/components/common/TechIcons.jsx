@@ -512,3 +512,4 @@ export function TechIcon({ name, className = 'w-4 h-4', ...props }) {
 }
 
 export default TechIcon;
+

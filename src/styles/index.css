@@ -63,11 +63,19 @@ body {
   background-size: 24px 24px;
 }
 
+/* Hide default system cursor on desktop so the custom ball cursor replaces it completely */
+@media (hover: hover) and (pointer: fine) {
+  html, body, a, button, input, textarea, select, [role="button"], [role="tab"], [role="link"], label {
+    cursor: none !important;
+  }
+}
+
 /* Hard Device Guard: Force-disable custom jumping ball cursor on coarse/touch screens */
 @media (pointer: coarse), (hover: none) {
   .cinematic-cursor-root {
     display: none !important;
   }
 }
+
 
 

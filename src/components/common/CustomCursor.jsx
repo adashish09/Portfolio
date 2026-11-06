@@ -1,14 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 
+const TRAIL_LENGTH = 8;
+
 /**
- * Cinematic Jumping Ball Custom Cursor
- * Physics-based spring momentum, dynamic velocity squash/stretch,
- * click-bounce jumping dynamics, and hover magnetism.
+ * Cinematic Ball Cursor with Particle Trail & Click Interaction
+ * 
+ * Replaces default system pointer on desktop with an organic glowing amber ball.
+ * Features a dynamic inertia-based trailing tail, energetic click bounce,
+ * expanding click shockwaves, and hover magnetism.
  * 
  * DEVICE SAFETY:
- * Strictly disabled on touchscreens, phones, tablets, and reduced-motion environments.
- * Pointer-events are strictly none to ensure zero interference with native touch or mouse events.
+ * Strictly disabled on touch devices and coarse pointers to ensure standard
+ * mobile touch gestures are 100% native and unobstructed.
  */
 export function CustomCursor() {
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -16,21 +20,24 @@ export function CustomCursor() {
   const [isHovering, setIsHovering] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
   const [isTouch, setIsTouch] = useState(false);
+  const [ripples, setRipples] = useState([]);
 
-  const cursorDotRef = useRef(null);
-  const jumpingBallRef = useRef(null);
+  const mainBallRef = useRef(null);
+  const trailRefs = useRef([]);
 
-  // Physics simulation references
+  // Coordinate references
   const mousePos = useRef({ x: -200, y: -200 });
-  const ballPos = useRef({ x: -200, y: -200 });
-  const ballVel = useRef({ x: 0, y: 0 });
-  const ballScale = useRef({ x: 1, y: 1 });
-  const jumpBounce = useRef(1);
-  const jumpVelocity = useRef(0);
+  const trailPositions = useRef(
+    Array.from({ length: TRAIL_LENGTH }, () => ({ x: -200, y: -200 }))
+  );
+
+  // Ball dynamics
+  const ballScale = useRef(1);
+  const ballVelocity = useRef(0);
   const animFrameId = useRef(null);
 
   useEffect(() => {
-    // 1. Device check: detect coarse pointer or non-hover devices
+    // 1. Device check: coarse pointer or touch screen
     const coarseMedia = window.matchMedia('(pointer: coarse)');
     const hoverMedia = window.matchMedia('(hover: none)');
 
@@ -39,14 +46,13 @@ export function CustomCursor() {
       return;
     }
 
-    // 2. Dynamic touch listener to instantly disarm cursor on hybrid touch interactions
+    // 2. Disarm immediately on touch interactions
     const handleTouchStart = () => {
       setIsTouch(true);
       setVisible(false);
     };
 
     const handleMouseMove = (e) => {
-      // Guard against synthetic touch-to-mouse events
       if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) {
         setIsTouch(true);
         return;
@@ -57,11 +63,11 @@ export function CustomCursor() {
 
       if (!visible) {
         setVisible(true);
-        // Teleport ball on initial entry so it doesn't fly in from corner
-        if (ballPos.current.x === -200) {
-          ballPos.current.x = e.clientX;
-          ballPos.current.y = e.clientY;
-        }
+        // Teleport trail points on entry to avoid streaks across screen
+        trailPositions.current.forEach((pt) => {
+          pt.x = e.clientX;
+          pt.y = e.clientY;
+        });
       }
     };
 
@@ -73,22 +79,34 @@ export function CustomCursor() {
       setVisible(true);
     };
 
-    // 3. Click jumping dynamics
-    const handleMouseDown = () => {
+    // 3. Click interaction: energetic squash, bounce, and ripple shockwave
+    const handleMouseDown = (e) => {
       setIsClicking(true);
-      // Squash before the jump
-      jumpBounce.current = 0.65;
-      jumpVelocity.current = -0.3;
+      ballScale.current = 0.65; // Squash on press
+      ballVelocity.current = -0.15;
+
+      // Spawn an expanding click ripple shockwave at click coordinates
+      const newRipple = {
+        id: Date.now() + Math.random(),
+        x: e.clientX,
+        y: e.clientY,
+      };
+
+      setRipples((prev) => [...prev.slice(-4), newRipple]);
+
+      // Auto-cleanup ripple
+      setTimeout(() => {
+        setRipples((prev) => prev.filter((r) => r.id !== newRipple.id));
+      }, 600);
     };
 
     const handleMouseUp = () => {
       setIsClicking(false);
-      // Energetic upward bounce / jump recoil
-      jumpBounce.current = 1.45;
-      jumpVelocity.current = 0.4;
+      ballScale.current = 1.45; // Energetic upward bounce recoil
+      ballVelocity.current = 0.35;
     };
 
-    // 4. Interactive element detection (hover state)
+    // 4. Interactive hover detection
     const handleMouseOver = (e) => {
       const target = e.target;
       if (!target) return;
@@ -102,6 +120,7 @@ export function CustomCursor() {
         target.closest('button') ||
         target.closest('a') ||
         target.closest('[role="button"]') ||
+        target.closest('[role="tab"]') ||
         target.classList?.contains('cursor-pointer');
 
       setIsHovering(Boolean(isInteractive));
@@ -115,55 +134,39 @@ export function CustomCursor() {
     document.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('mouseover', handleMouseOver, { passive: true });
 
-    // 5. High-performance physics rendering loop (Spring Physics + Squash/Stretch)
+    // 5. Physics rendering loop: Primary ball + dynamic trailing tail
     const render = () => {
-      // Spring force towards mouse coordinates
-      const springStiffness = isHovering ? 0.22 : 0.16;
-      const damping = isHovering ? 0.65 : 0.72;
+      // Smooth spring bounce recovery for main ball
+      const delta = 1 - ballScale.current;
+      ballVelocity.current += delta * 0.28;
+      ballVelocity.current *= 0.65;
+      ballScale.current += ballVelocity.current;
 
-      const dx = mousePos.current.x - ballPos.current.x;
-      const dy = mousePos.current.y - ballPos.current.y;
-
-      ballVel.current.x += dx * springStiffness;
-      ballVel.current.y += dy * springStiffness;
-
-      ballVel.current.x *= damping;
-      ballVel.current.y *= damping;
-
-      ballPos.current.x += ballVel.current.x;
-      ballPos.current.y += ballVel.current.y;
-
-      // Calculate speed and velocity angle for squash and stretch
-      const speed = Math.sqrt(
-        ballVel.current.x * ballVel.current.x + ballVel.current.y * ballVel.current.y
-      );
-      const angle = Math.atan2(ballVel.current.y, ballVel.current.x) * (180 / Math.PI);
-
-      // Spring oscillation for jump bounce
-      const jumpDelta = 1 - jumpBounce.current;
-      jumpVelocity.current += jumpDelta * 0.25;
-      jumpVelocity.current *= 0.68;
-      jumpBounce.current += jumpVelocity.current;
-
-      // Stretch along velocity vector proportional to speed
-      const stretchAmount = Math.min(speed * 0.02, 0.45);
-      const baseScaleX = (1 + stretchAmount) * jumpBounce.current;
-      const baseScaleY = (1 - stretchAmount * 0.6) * jumpBounce.current;
-
-      // Precision central point
-      if (cursorDotRef.current) {
-        cursorDotRef.current.style.transform = `translate3d(${mousePos.current.x}px, ${mousePos.current.y}px, 0)`;
+      // Render primary ball directly at mouse position
+      if (mainBallRef.current) {
+        const hoverMultiplier = isHovering ? 1.6 : 1;
+        const currentScale = ballScale.current * hoverMultiplier;
+        mainBallRef.current.style.transform = `translate3d(${mousePos.current.x}px, ${mousePos.current.y}px, 0) scale(${currentScale})`;
       }
 
-      // Jumping ball transform
-      if (jumpingBallRef.current) {
-        const hoverScale = isHovering ? 1.7 : 1;
-        const clickScale = isClicking ? 0.75 : 1;
-        const finalScaleX = baseScaleX * hoverScale * clickScale;
-        const finalScaleY = baseScaleY * hoverScale * clickScale;
+      // Update trail segments with linear interpolation
+      let prevX = mousePos.current.x;
+      let prevY = mousePos.current.y;
 
-        jumpingBallRef.current.style.transform = `translate3d(${ballPos.current.x}px, ${ballPos.current.y}px, 0) rotate(${angle}deg) scale(${finalScaleX}, ${finalScaleY})`;
-      }
+      trailPositions.current.forEach((point, index) => {
+        // Trailing interpolation factor (closer points follow faster)
+        const factor = 0.38 - index * 0.025;
+        point.x += (prevX - point.x) * Math.max(factor, 0.12);
+        point.y += (prevY - point.y) * Math.max(factor, 0.12);
+
+        const el = trailRefs.current[index];
+        if (el) {
+          el.style.transform = `translate3d(${point.x}px, ${point.y}px, 0)`;
+        }
+
+        prevX = point.x;
+        prevY = point.y;
+      });
 
       animFrameId.current = requestAnimationFrame(render);
     };
@@ -182,7 +185,6 @@ export function CustomCursor() {
     };
   }, [prefersReducedMotion, visible, isHovering, isClicking]);
 
-  // Zero-render guard for mobile, touch screens, and reduced motion
   if (prefersReducedMotion || isTouch) return null;
 
   return (
@@ -192,33 +194,62 @@ export function CustomCursor() {
         visible ? 'opacity-100' : 'opacity-0'
       }`}
     >
-      {/* Precision Center Target Dot */}
-      <div
-        ref={cursorDotRef}
-        className="fixed top-0 left-0 w-2 h-2 -ml-1 -mt-1 rounded-full bg-[#F5A14B] pointer-events-none shadow-[0_0_8px_#E87524]"
-      />
+      {/* Dynamic Trailing Particle Tail */}
+      {Array.from({ length: TRAIL_LENGTH }).map((_, i) => {
+        // Trail size and opacity decay progressively
+        const sizePx = Math.max(16 - i * 1.6, 4);
+        const opacity = Math.max(0.45 - i * 0.05, 0.08);
 
-      {/* Dynamic Jumping Ball / Glowing Companion Orb */}
+        return (
+          <div
+            key={i}
+            ref={(el) => (trailRefs.current[i] = el)}
+            className="fixed top-0 left-0 rounded-full pointer-events-none"
+            style={{
+              width: `${sizePx}px`,
+              height: `${sizePx}px`,
+              marginLeft: `-${sizePx / 2}px`,
+              marginTop: `-${sizePx / 2}px`,
+              backgroundColor: '#E87524',
+              opacity: opacity,
+              boxShadow: '0 0 10px rgba(232, 117, 36, 0.5)',
+              willChange: 'transform',
+            }}
+          />
+        );
+      })}
+
+      {/* Primary Glowing Ball Cursor (Replaces the system pointer) */}
       <div
-        ref={jumpingBallRef}
-        className="fixed top-0 left-0 -ml-3.5 -mt-3.5 w-7 h-7 rounded-full pointer-events-none flex items-center justify-center transition-[background-color,border-color,filter] duration-150 ease-out"
+        ref={mainBallRef}
+        className="fixed top-0 left-0 -ml-3.5 -mt-3.5 w-7 h-7 rounded-full pointer-events-none flex items-center justify-center"
         style={{
           willChange: 'transform',
-          transformOrigin: 'center center',
         }}
       >
-        {/* Core Glowing Ball with warm amber gradient */}
         <div
-          className={`w-full h-full rounded-full transition-all duration-200 ${
+          className={`w-full h-full rounded-full transition-[background-color,border-color,box-shadow] duration-200 ${
             isHovering
-              ? 'bg-gradient-to-br from-[#F5A14B]/35 via-[#E87524]/20 to-transparent border border-[#F5A14B]/80 shadow-[0_0_25px_rgba(232,117,36,0.5)] backdrop-blur-[1px]'
-              : 'bg-gradient-to-br from-[#F5A14B] via-[#E87524] to-[#C25A12] border border-[#F5A14B]/40 shadow-[0_0_15px_rgba(232,117,36,0.6)] opacity-75'
+              ? 'bg-[#E87524]/20 border-2 border-[#F5A14B] shadow-[0_0_25px_rgba(232,117,36,0.7)] backdrop-blur-[1px]'
+              : 'bg-gradient-to-br from-[#F5A14B] via-[#E87524] to-[#C25A12] border border-[#F5A14B]/70 shadow-[0_0_16px_rgba(232,117,36,0.8),0_0_30px_rgba(232,117,36,0.35)]'
           }`}
         >
-          {/* Subtle Inner Specular Highlight on the Ball */}
-          <div className="w-1.5 h-1.5 rounded-full bg-white/70 absolute top-1 left-1 blur-[0.4px]" />
+          {/* Specular Light Dot for 3D sphere feel */}
+          <div className="w-1.5 h-1.5 rounded-full bg-white/80 absolute top-1.5 left-1.5 blur-[0.3px]" />
         </div>
       </div>
+
+      {/* Interactive Click Ripple Shockwaves */}
+      {ripples.map((ripple) => (
+        <div
+          key={ripple.id}
+          className="fixed top-0 left-0 pointer-events-none -ml-6 -mt-6 w-12 h-12 rounded-full border border-[#F5A14B] animate-ping"
+          style={{
+            transform: `translate3d(${ripple.x}px, ${ripple.y}px, 0)`,
+            boxShadow: '0 0 15px rgba(232, 117, 36, 0.6)',
+          }}
+        />
+      ))}
     </div>
   );
 }
